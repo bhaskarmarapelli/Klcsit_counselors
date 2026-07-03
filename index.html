@@ -56,6 +56,25 @@ body{
   border:2px solid var(--gold);
   flex-shrink:0;
 }
+
+
+.crest {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+
 .brand-text .eyebrow{
   font-family:'DM Mono',monospace;
   font-size:11px;letter-spacing:2.5px;text-transform:uppercase;
@@ -360,7 +379,7 @@ footer b{color:var(--navy);}
 
   <div class="masthead">
     <div class="brand">
-      <div class="crest">KL</div>
+      <div class="crest"> <img src="images/csit_logo.png" height="50" width="100"/> </div>
       <div class="brand-text">
         <div class="eyebrow">Dept. of CS &amp; IT &middot; KL University</div>
         <h1>Counseling Directory</h1>
