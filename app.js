@@ -116,7 +116,7 @@ function initCounselingApp(){
   const statsRow = document.getElementById('statsRow');
   const avgLoad = (students.length / mentors.length).toFixed(1);
   const withBacklogs = students.filter(s => (s.backlogCount || 0) > 0).length;
-  statsRow.innerHTML ='<div class="num">Students in their early academic stage need the help of an expert who acts as their mentor, guide, and well-wisher. At KLU CS&IT, we initiate counseling of all sorts at different stages, or students can approach us directly when in need.</p></div>';/*  `
+  statsRow.innerHTML ='' ;/*<div class="num">Students in their early academic stage need the help of an expert who acts as their mentor, guide, and well-wisher. At KLU CS&IT, we initiate counseling of all sorts at different stages, or students can approach us directly when in need.</p></div>';/*  `
     <div class="stat"><div class="num">${students.length}</div><div class="lbl">Students Enrolled</div></div>
     <div class="stat"><div class="num">${mentors.length}</div><div class="lbl">Counselors</div></div>
     <div class="stat"><div class="num">${avgLoad}</div><div class="lbl">Avg. Students / Counselor</div></div>
