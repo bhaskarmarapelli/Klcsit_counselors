@@ -95,7 +95,7 @@ body{
 /* ===== Stats strip ===== */
 .stats{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:1px;
   background:var(--hairline);
   margin-top:28px;
@@ -296,6 +296,70 @@ body{
 .field .v a{color:var(--navy); text-decoration:none;}
 .field .v a:hover{text-decoration:underline;}
 
+/* ===== Loading / error states ===== */
+.load-state{
+  text-align:center; padding:40px 20px; color:var(--ink-soft);
+  font-family:'DM Mono',monospace; font-size:13px; letter-spacing:0.5px;
+}
+.error-state{
+  max-width:640px; margin:20px auto; padding:18px 22px; border-radius:12px;
+  background:#FBF1EC; border:1px solid #E8B9A6; color:var(--crimson-deep);
+  font-size:13.5px; line-height:1.6;
+}
+body.data-loading .search-section, body.data-loading #results{ display:none; }
+
+/* ===== Academic snapshot ===== */
+.acad-panel{
+  margin-top:18px; padding-top:18px; border-top:1px dashed var(--hairline);
+}
+.acad-chips{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+.acad-chip{
+  flex:1; min-width:110px; background:var(--cream); border:1px solid var(--hairline);
+  border-radius:11px; padding:10px 12px;
+}
+.acad-chip .acad-lbl{
+  font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:1px; text-transform:uppercase;
+  color:var(--ink-soft); margin-bottom:4px;
+}
+.acad-chip .acad-val{font-family:'Playfair Display',serif; font-weight:700; font-size:19px; color:var(--ink);}
+.acad-chip .acad-sub{font-size:10.5px; color:var(--ink-soft); margin-top:2px;}
+.acad-chip.cgpa-dist .acad-val{color:#2F6B3A;}
+.acad-chip.cgpa-first .acad-val{color:var(--navy);}
+.acad-chip.cgpa-second .acad-val{color:var(--gold);}
+.acad-chip.cgpa-pass .acad-val{color:#B0631F;}
+.acad-chip.cgpa-low .acad-val{color:var(--crimson);}
+.acad-chip.backlog-ok .acad-val{color:#2F6B3A;}
+.acad-chip.backlog-bad .acad-val{color:var(--crimson);}
+
+.credit-bar-track{
+  width:100%; height:7px; border-radius:6px; background:var(--hairline); overflow:hidden; margin-top:6px;
+}
+.credit-bar-fill{
+  height:100%; border-radius:6px; background:linear-gradient(90deg,var(--gold),var(--navy));
+}
+
+.acad-detail-toggle{
+  font-family:'DM Mono',monospace; font-size:11px; color:var(--crimson); cursor:pointer;
+  background:none; border:none; padding:0; text-decoration:underline; margin-bottom:10px;
+}
+.backlog-list{display:flex; flex-direction:column; gap:6px; margin-bottom:12px;}
+.backlog-list.hidden{display:none;}
+.backlog-row{
+  display:flex; align-items:center; gap:10px; background:#FBF1EC; border:1px solid #F0D9CE;
+  border-radius:9px; padding:8px 12px; font-size:12px;
+}
+.backlog-row .bl-course{font-family:'DM Mono',monospace; font-weight:600; color:var(--crimson); min-width:80px;}
+.backlog-row .bl-meta{color:var(--ink-soft); flex:1;}
+.backlog-row .bl-status{
+  font-family:'DM Mono',monospace; font-size:9.5px; text-transform:uppercase;
+  background:var(--crimson); color:#fff; padding:2px 7px; border-radius:20px; flex-shrink:0;
+}
+.notdeclared-note{
+  font-size:12px; color:var(--ink-soft); background:var(--cream); border:1px solid var(--hairline);
+  border-radius:9px; padding:8px 12px; line-height:1.6;
+}
+.notdeclared-note b{color:var(--navy); font-family:'DM Mono',monospace; font-weight:600;}
+
 .link-col{
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:0 22px; position:relative; min-width:120px;
@@ -373,7 +437,7 @@ footer b{color:var(--navy);}
 }
 </style>
 </head>
-<body>
+<body class="data-loading">
 
 <div class="wrap">
 
@@ -392,6 +456,9 @@ footer b{color:var(--navy);}
   </div>
 
   <div class="stats" id="statsRow"></div>
+
+  <div id="loadState" class="load-state">Loading counseling directory&hellip;</div>
+  <div id="errorState" class="error-state" style="display:none;"></div>
 
   <div class="search-section">
     <p class="search-heading">Look up a student to find their counselor, or a counselor to find their students</p>
@@ -427,7 +494,7 @@ footer b{color:var(--navy);}
 
 </div>
 
-<script src="data_embed.js"></script>
+<script src="data-loader.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

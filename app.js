@@ -1,4 +1,5 @@
-(function(){
+function initCounselingApp(){
+  document.body.classList.remove('data-loading');
   const students = DATA.students;
   const mentors = DATA.mentors;
 
@@ -37,15 +38,91 @@
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  // ---- academic helpers ----
+  function cgpaBand(cgpa){
+    if(cgpa === null || cgpa === undefined) return null;
+    if(cgpa >= 7.75) return {cls:'cgpa-dist', label:'Distinction'};
+    if(cgpa >= 6.75) return {cls:'cgpa-first', label:'First Class'};
+    if(cgpa >= 5.75) return {cls:'cgpa-second', label:'Second Class'};
+    if(cgpa >= 5.25) return {cls:'cgpa-pass', label:'Pass Class'};
+    return {cls:'cgpa-low', label:'Below Pass'};
+  }
+  const STATUS_LABEL = {F:'Fail', DT:'Detained', NA:'Not Attempted', GP:'Grade Pending', 'GP/MP':'Grade Pending'};
+  function statusLabel(code){ return STATUS_LABEL[code] || code || '&mdash;'; }
+
+  function renderAcademicPanel(s){
+    const hasAcademics = s.cgpa !== null && s.cgpa !== undefined;
+    if(!hasAcademics) return '';
+
+    const band = cgpaBand(s.cgpa);
+    const backlogCount = s.backlogCount || 0;
+    const backlogs = Array.isArray(s.backlogs) ? s.backlogs : [];
+    const notDeclared = Array.isArray(s.notDeclared) ? s.notDeclared : [];
+    const total = s.totalCredits, obtained = s.obtainedCredits;
+    const pct = (total && obtained !== null) ? Math.min(100, Math.round((obtained/total)*100)) : null;
+
+    const cgpaChip = `
+      <div class="acad-chip ${band ? band.cls : ''}">
+        <div class="acad-lbl">CGPA</div>
+        <div class="acad-val">${s.cgpa.toFixed(2)}</div>
+        ${band ? `<div class="acad-sub">${band.label}</div>` : ''}
+      </div>`;
+
+    const creditsChip = `
+      <div class="acad-chip">
+        <div class="acad-lbl">Credits</div>
+        <div class="acad-val">${obtained !== null ? obtained : '&mdash;'}${total ? ` <span style="font-size:12px;color:var(--ink-soft);">/ ${total}</span>` : ''}</div>
+        ${pct !== null ? `<div class="credit-bar-track"><div class="credit-bar-fill" style="width:${pct}%"></div></div>` : ''}
+      </div>`;
+
+    const backlogChip = `
+      <div class="acad-chip ${backlogCount > 0 ? 'backlog-bad' : 'backlog-ok'}">
+        <div class="acad-lbl">Backlogs</div>
+        <div class="acad-val">${backlogCount}</div>
+        <div class="acad-sub">${backlogCount > 0 ? 'active' : 'clear'}</div>
+      </div>`;
+
+    const backlogListId = 'bl_' + s.id;
+    const backlogSection = backlogCount > 0 ? `
+      <button class="acad-detail-toggle" data-toggle="${backlogListId}">Show ${backlogCount} backlog${backlogCount>1?'s':''} &darr;</button>
+      <div class="backlog-list hidden" id="${backlogListId}">
+        ${backlogs.map(b => `
+          <div class="backlog-row">
+            <div class="bl-course">${escapeHtml(b.course)}</div>
+            <div class="bl-meta">${escapeHtml(b.year)} &middot; ${escapeHtml(b.sem)}${b.credits ? ` &middot; ${escapeHtml(b.credits)} cr` : ''}</div>
+            <div class="bl-status">${escapeHtml(statusLabel(b.status))}</div>
+          </div>
+        `).join('')}
+      </div>` : '';
+
+    const notDeclaredSection = notDeclared.length > 0 ? `
+      <div class="notdeclared-note">
+        <b>${notDeclared.length}</b> course${notDeclared.length>1?'s':''} awaiting result declaration: ${notDeclared.map(escapeHtml).join(', ')}
+      </div>` : '';
+
+    return `
+      <div class="acad-panel">
+        <div class="acad-chips">
+          ${cgpaChip}
+          ${creditsChip}
+          ${backlogChip}
+        </div>
+        ${backlogSection}
+        ${notDeclaredSection}
+      </div>`;
+  }
+
   // ---- stats ----
   const statsRow = document.getElementById('statsRow');
   const avgLoad = (students.length / mentors.length).toFixed(1);
-  statsRow.innerHTML = `
+  const withBacklogs = students.filter(s => (s.backlogCount || 0) > 0).length;
+  statsRow.innerHTML ='<div class="stat">Students in their early academic stage need the help of an expert who acts as their mentor, guide, and well-wisher. At KLU CS&IT, we initiate counseling of all sorts at different stages, or students can approach us directly when in need.</p></div>';/*  `
     <div class="stat"><div class="num">${students.length}</div><div class="lbl">Students Enrolled</div></div>
     <div class="stat"><div class="num">${mentors.length}</div><div class="lbl">Counselors</div></div>
     <div class="stat"><div class="num">${avgLoad}</div><div class="lbl">Avg. Students / Counselor</div></div>
     <div class="stat"><div class="num">3</div><div class="lbl">Batches Covered (Y23&ndash;Y25)</div></div>
-  `;
+    <div class="stat"><div class="num">${withBacklogs}</div><div class="lbl">Students with Backlogs</div></div>
+  `;*/
 
   // ---- mode state ----
   let mode = 'student'; // 'student' | 'counselor'
@@ -289,6 +366,7 @@
               ${fieldRow('Father', escapeHtml(titleCase(s.father)))}
               ${fieldRow('Address', escapeHtml(titleCase(s.addr)))}
             </div>
+            ${renderAcademicPanel(s)}
           </div>
         </div>
 
@@ -333,6 +411,18 @@
         if(mm) renderRoster(mm);
         setMode('counselor');
         searchInput.value = mm.name;
+      });
+    }
+    const blToggle = resultsEl.querySelector('.acad-detail-toggle');
+    if(blToggle){
+      blToggle.addEventListener('click', () => {
+        const list = document.getElementById(blToggle.getAttribute('data-toggle'));
+        if(!list) return;
+        const nowHidden = list.classList.toggle('hidden');
+        const count = list.querySelectorAll('.backlog-row').length;
+        blToggle.textContent = nowHidden
+          ? `Show ${count} backlog${count>1?'s':''} \u2193`
+          : `Hide backlog details \u2191`;
       });
     }
     resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
@@ -383,9 +473,11 @@
           <div class="mini-avatar" style="background:${colorFor(s.name)}">${initials(s.name)}</div>
           <div>
             <div class="stu-name">${escapeHtml(titleCase(s.name))}</div>
-            <div class="stu-id">ID ${escapeHtml(s.id)}</div>
+            <div class="stu-id">ID ${escapeHtml(s.id)}${s.cgpa !== null && s.cgpa !== undefined ? ` &middot; CGPA ${s.cgpa.toFixed(2)}` : ''}</div>
           </div>
-          <div class="stu-year">Y${escapeHtml(String(s.yos||''))}</div>
+          ${s.backlogCount > 0
+            ? `<div class="stu-year" style="background:rgba(139,26,26,0.10); color:var(--crimson);">${s.backlogCount} BL</div>`
+            : `<div class="stu-year">Y${escapeHtml(String(s.yos||''))}</div>`}
         </div>
       `).join('');
       grid.querySelectorAll('.stu-tile').forEach(el => {
@@ -404,4 +496,10 @@
     resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-})();
+}
+
+if (window.DATA) {
+  initCounselingApp();
+} else {
+  window.addEventListener('data:ready', initCounselingApp, { once: true });
+}
